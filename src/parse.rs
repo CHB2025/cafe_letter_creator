@@ -7,7 +7,6 @@ pub fn process_file(text: String) -> Vec<Job> {
         .collect();
 
     let date_line = &csv[2][0];
-    println!("{}", date_line);
     let day = date_line
         .split_whitespace()
         .nth(1)
@@ -19,6 +18,8 @@ pub fn process_file(text: String) -> Vec<Job> {
         .expect("Could not read date line")
         .parse()
         .expect("Could not read date line");
+
+    println!("Collecting shifts from {day} the {date}th");
 
     let mut jobs = vec![
         // MANAGERS
@@ -62,7 +63,6 @@ pub fn process_file(text: String) -> Vec<Job> {
     ];
     jobs.extend_from_slice(&cleaners(&csv[30][0], &csv[30][2]));
 
-    //("".to_owned(), "".to_owned(), jobs)
     jobs.into_iter()
         .map(|(time, role, name)| Job {
             day: day.clone(),

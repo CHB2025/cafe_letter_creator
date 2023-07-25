@@ -1,5 +1,10 @@
-use anyhow::{anyhow, Result};
-use std::{collections::HashMap, fs::File, io::Read};
+use anyhow::Result;
+use std::{
+    collections::HashMap,
+    env,
+    fs::{self, File},
+    io::Read,
+};
 
 use print::print;
 
@@ -8,19 +13,37 @@ mod parse;
 mod print;
 
 fn main() -> Result<()> {
-    let mut person_jobs = HashMap::new();
-    let mut file = File::open("./test.csv")?;
-    let mut csv_string = String::new();
-    file.read_to_string(&mut csv_string)?;
-    let jobs = parse::process_file(csv_string);
-    for j in jobs.clone() {
-        if let Some(name) = j.name.clone() {
-            person_jobs.entry(name).or_insert(vec![]).push(j);
+    let dir = env::current_dir()?;
+    let csvs: Vec<_> = fs::read_dir(dir)?
+        .filter_map(|entry| match entry {
+            Ok(e) if e.path().extension().is_some_and(|e| e == "csv") => Some(e),
+            _ => None,
+        })
+        .collect();
+    if csvs.len() == 0 {
+        println!("No csvs in current directory");
+        return Ok(());
+    }
+
+    let mut person_shifts = HashMap::new();
+    for file in csvs {
+        println!("Reading from {} ...", file.path().display());
+
+        let mut file = File::open(file.path())?;
+        let mut csv_string = String::new();
+        file.read_to_string(&mut csv_string)?;
+        for j in parse::process_file(csv_string) {
+            if let Some(name) = j.name.clone() {
+                person_shifts.entry(name).or_insert(vec![]).push(j);
+            }
         }
     }
 
-    let test = jobs[0].clone();
-    print(test.name.clone().expect("missing name"), vec![test])?;
+    _ = fs::create_dir("letters");
+
+    for (person, shifts) in person_shifts {
+        print(person, shifts)?;
+    }
 
     Ok(())
 }

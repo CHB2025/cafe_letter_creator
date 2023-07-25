@@ -44,7 +44,7 @@ pub fn print(name: String, mut jobs: Vec<Job>) -> Result<()> {
     current_layer.end_text_section();
 
     doc.save(&mut BufWriter::new(File::create(format!(
-        "{name} fair schedule.pdf"
+        "./letters/{name} fair schedule.pdf"
     ))?))?;
     Ok(())
 }
