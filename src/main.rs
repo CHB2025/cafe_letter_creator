@@ -13,7 +13,8 @@ mod parse;
 mod print;
 
 fn main() -> Result<()> {
-    let dir = env::current_dir()?;
+    let mut dir = env::current_exe()?;
+    dir.pop();
     let csvs: Vec<_> = fs::read_dir(dir)?
         .filter_map(|entry| match entry {
             Ok(e) if e.path().extension().is_some_and(|e| e == "csv") => Some(e),
