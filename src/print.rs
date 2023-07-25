@@ -17,7 +17,13 @@ pub fn print(name: String, mut jobs: Vec<Job>) -> Result<()> {
     current_layer.set_text_cursor(Mm(20.0), Mm(254.4));
     current_layer.set_line_height(20.0);
 
-    let greeting = format!("Hi {},", name.clone());
+    let cap_name = name
+        .clone()
+        .split_whitespace()
+        .map(|name| name[0..1].to_uppercase() + &name[1..])
+        .collect::<Vec<_>>()
+        .join(" ");
+    let greeting = format!("Hi {},", cap_name);
     current_layer.write_text(greeting, &font);
     current_layer.add_line_break();
     current_layer.add_line_break();
