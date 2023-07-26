@@ -84,7 +84,7 @@ fn parens(time: &str, input: &str) -> (String, String, Option<String>) {
         |(role, name)| {
             (
                 time.to_owned(),
-                role.trim_start_matches([' ', '(', '1', '2', '3', '5'])
+                role.trim_start_matches([' ', '(', '1', '2', '3', '4', '5'])
                     .to_owned(),
                 Some(name.trim().to_lowercase()).filter(|s| !s.is_empty()),
             )

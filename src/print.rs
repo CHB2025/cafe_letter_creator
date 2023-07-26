@@ -1,19 +1,17 @@
-use std::{fs::File, io::BufWriter};
-
-use anyhow::Result;
-use printpdf::{BuiltinFont, Mm, PdfDocument};
+use printpdf::{IndirectFontRef, Mm, PdfLayerReference};
 
 use crate::job::Job;
 
-pub fn print(name: String, mut jobs: Vec<Job>) -> Result<()> {
-    let (doc, page1, layer1) = PdfDocument::new("Fair Schedule", Mm(215.9), Mm(279.4), "Layer 1");
-    let current_layer = doc.get_page(page1).get_layer(layer1);
-    let font = doc.add_builtin_font(BuiltinFont::Helvetica)?;
-
+pub fn print(
+    current_layer: PdfLayerReference,
+    font: &IndirectFontRef,
+    name: String,
+    mut jobs: Vec<Job>,
+) {
     current_layer.begin_text_section();
 
     // Setup
-    current_layer.set_font(&font, 18.0);
+    current_layer.set_font(font, 14.0);
     current_layer.set_text_cursor(Mm(20.0), Mm(254.4));
     current_layer.set_line_height(20.0);
 
@@ -24,15 +22,15 @@ pub fn print(name: String, mut jobs: Vec<Job>) -> Result<()> {
         .collect::<Vec<_>>()
         .join(" ");
     let greeting = format!("Hi {},", cap_name);
-    current_layer.write_text(greeting, &font);
+    current_layer.write_text(greeting, font);
     current_layer.add_line_break();
     current_layer.add_line_break();
     current_layer.add_line_break();
     let greeting = format!("Thanks for volunteering to work at the Cornerstone Café!");
-    current_layer.write_text(greeting, &font);
+    current_layer.write_text(greeting, font);
     current_layer.add_line_break();
     let greeting = format!("Here is when you are scheduled to work at the café this week:");
-    current_layer.write_text(greeting, &font);
+    current_layer.write_text(greeting, font);
     current_layer.add_line_break();
     current_layer.add_line_break();
     current_layer.add_line_break();
@@ -43,14 +41,19 @@ pub fn print(name: String, mut jobs: Vec<Job>) -> Result<()> {
             "{}, Aug. {}: {} from {}",
             job.day, job.date, job.role, job.time
         );
-        current_layer.write_text(text, &font);
+        current_layer.write_text(&text, font);
         current_layer.add_line_break();
     }
 
-    current_layer.end_text_section();
+    current_layer.add_line_break();
+    current_layer.add_line_break();
+    current_layer.add_line_break();
+    current_layer.write_text("Please let me know if there are any issues.", font);
+    current_layer.add_line_break();
+    current_layer.add_line_break();
+    current_layer.write_text("Cheers,", font);
+    current_layer.add_line_break();
+    // Add signature
 
-    doc.save(&mut BufWriter::new(File::create(format!(
-        "./letters/{name} fair schedule.pdf"
-    ))?))?;
-    Ok(())
+    current_layer.end_text_section();
 }
